@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
+import matplotlib.pyplot as plt
+from pandas.plotting import register_matplotlib_converters
 from sklearn.cluster import KMeans
 
 def generate_ohlc(tick_data, time_range):
@@ -25,7 +25,6 @@ def generate_ohlc(tick_data, time_range):
 
     # Выполнение кластерного анализа для горизонтальных объемов
     volumes = ohlc_with_volume['<VOL>'].values.reshape(-1, 1)
-    # kmeans = KMeans(n_clusters=5)  # Задайте необходимое количество кластеров
     kmeans = KMeans(n_clusters=2)
     kmeans.fit(volumes)
     clusters = kmeans.predict(volumes)
@@ -35,9 +34,33 @@ def generate_ohlc(tick_data, time_range):
 
     return ohlc_with_volume
 
+# Регистрация конвертеров времени для matplotlib
+register_matplotlib_converters()
+
 # Пример использования функции
 tick_data = 'GAZP_230310_230410.txt'
 time_range = '15Min'
 
 ohlc_data = generate_ohlc(tick_data, time_range)
-print(ohlc_data)
+
+# Создание графика свечей
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(ohlc_data.index, ohlc_data['close'], label='Close', color='blue', linewidth=1)
+ax.plot(ohlc_data.index, ohlc_data['high'], label='High', color='green', linewidth=1)
+ax.plot(ohlc_data.index, ohlc_data['low'], label='Low', color='red', linewidth=1)
+ax.plot(ohlc_data.index, ohlc_data['open'], label='Open', color='purple', linewidth=1)
+ax.set_xlabel('Time')
+ax.set_ylabel('Price')
+ax.set_title('OHLC Chart')
+ax.legend()
+
+# Создание графика объемов
+fig, ax = plt.subplots(figsize=(12, 4))
+ax.bar(ohlc_data.index, ohlc_data['<VOL>'], color='orange')
+ax.set_xlabel('Time')
+ax.set_ylabel('Volume')
+ax.set_title('Volume Chart')
+
+# Отображение графиков
+plt.tight_layout()
+plt.show()

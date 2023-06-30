@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
-from sklearn.cluster import KMeans
+import mplfinance as mpf
 
 def generate_ohlc(tick_data, time_range):
     # Чтение тиковых данных
@@ -23,16 +21,6 @@ def generate_ohlc(tick_data, time_range):
     # Заполнение пропущенных значений нулями
     ohlc_with_volume.fillna(0, inplace=True)
 
-    # Выполнение кластерного анализа для горизонтальных объемов
-    volumes = ohlc_with_volume['<VOL>'].values.reshape(-1, 1)
-    # kmeans = KMeans(n_clusters=5)  # Задайте необходимое количество кластеров
-    kmeans = KMeans(n_clusters=2)
-    kmeans.fit(volumes)
-    clusters = kmeans.predict(volumes)
-
-    # Добавление горизонтальных объемов в DataFrame
-    ohlc_with_volume['Cluster'] = clusters
-
     return ohlc_with_volume
 
 # Пример использования функции
@@ -40,4 +28,9 @@ tick_data = 'GAZP_230310_230410.txt'
 time_range = '15Min'
 
 ohlc_data = generate_ohlc(tick_data, time_range)
-print(ohlc_data)
+
+# Переименование столбца "<VOL>" в "volume"
+ohlc_data.rename(columns={'<VOL>': 'volume'}, inplace=True)
+
+# Создание свечного графика
+mpf.plot(ohlc_data, type='candle', style='yahoo', volume=True, figsize=(12, 8), title='OHLC Chart', ylabel='Price', ylabel_lower='Volume')
